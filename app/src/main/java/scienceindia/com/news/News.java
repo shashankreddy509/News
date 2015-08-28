@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.ImageView;
+
+import java.util.ArrayList;
 
 //This deprecation is because of setNavigationMode is been deprecated in new version to avoid the conflict we have added the deprecation.
 @SuppressWarnings("deprecation")
@@ -36,7 +39,7 @@ public class News extends AppCompatActivity
     static Context mContext;
     private CharSequence mTitle;
     private String strJsonResult = "";
-    private fierceDAO mFierceDAO;
+    private FierceNewsDao mFierceDAO;
     static String strPresentUrl = "", SelectedName = "";
 
     private ProgressDialog progress;
@@ -62,22 +65,26 @@ public class News extends AppCompatActivity
                 //The server data has been fetched, parsed and saved to the local variables and doing the next operations.
                 mNavigationDrawerFragment = (NavigationDrawerFragment)
                         getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+                mNavigationDrawerFragment.getCategoryData(mCategoryDatas);
                 mTitle = getTitle();
 
                 // Set up the drawer.
                 mNavigationDrawerFragment.setUp(
                         R.id.navigation_drawer,
                         (DrawerLayout) findViewById(R.id.drawer_layout));
+
             }
             progress.dismiss();
         }
     };
 
+    private ArrayList<CategoryData> mCategoryDatas;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news);
-        mFierceDAO = new fierceDAO();
+        mFierceDAO = new FierceNewsDao();
         mContext = this;
 
         //Get the data from server and parses the data.
@@ -88,7 +95,8 @@ public class News extends AppCompatActivity
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mFierceDAO.fetchJsonData();
+                mCategoryDatas = mFierceDAO.fetchJsonData();
+                mFierceDAO.getExpandableAdapter(mCategoryDatas);
                 mHandler.post(mRunnable);
             }
         }).start();
@@ -181,7 +189,9 @@ public class News extends AppCompatActivity
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_news, container, false);
             try {
-                if (strPresentUrl.equalsIgnoreCase("")) {
+                Log.d("URL", strPresentUrl);
+                Log.d("Is Empty", strPresentUrl.equalsIgnoreCase("") + "");
+                if (!strPresentUrl.equalsIgnoreCase("")) {
                     new DownloadImageTask((ImageView) rootView.findViewById(R.id.imgShowImage))
                             .execute(strPresentUrl);
                 }

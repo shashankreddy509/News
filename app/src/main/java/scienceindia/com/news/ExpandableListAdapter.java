@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -16,37 +15,32 @@ import java.util.List;
  */
 class ExpandableListAdapter extends BaseExpandableListAdapter {
 
-    private final Context _context;
-    private final List<CategoryData> _listDataHeader; // header titles
-    // child data in format of header title, child title
-    private final HashMap<CategoryData, List<SubCategoryData>> _listDataChild;
+    private final Context mContext;
+    private final List<CategoryData> listDataHeader; // header titles
 
-    public ExpandableListAdapter(Context context, List<CategoryData> listDataHeader,
-                                 HashMap<CategoryData, List<SubCategoryData>> listChildData) {
-        this._context = context;
-        this._listDataHeader = listDataHeader;
-        this._listDataChild = listChildData;
+    public ExpandableListAdapter(Context context, List<CategoryData> listDataHeader) {
+        this.mContext = context;
+        this.listDataHeader = listDataHeader;
     }
 
     @Override
     public int getGroupCount() {
-        return this._listDataHeader.size();
+        return this.listDataHeader.size();
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return this._listDataChild.get(this._listDataHeader.get(groupPosition)).size();
+        return listDataHeader.get(groupPosition).getSubCategoryData().size();
     }
 
     @Override
     public Object getGroup(int groupPosition) {
-        return this._listDataHeader.get(groupPosition);
+        return this.listDataHeader.get(groupPosition);
     }
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
-        return this._listDataChild.get(this._listDataHeader.get(groupPosition))
-                .get(childPosition);
+        return this.listDataHeader.get(groupPosition).getSubCategoryData().get(childPosition);
     }
 
     @Override
@@ -68,7 +62,7 @@ class ExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         CategoryData mCategoryData = (CategoryData) getGroup(groupPosition);
         if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) this._context
+            LayoutInflater infalInflater = (LayoutInflater) this.mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = infalInflater.inflate(R.layout.category, null);
         }
@@ -82,7 +76,7 @@ class ExpandableListAdapter extends BaseExpandableListAdapter {
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         SubCategoryData mSubCategoryData = (SubCategoryData) getChild(groupPosition, childPosition);
         if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) this._context
+            LayoutInflater infalInflater = (LayoutInflater) this.mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = infalInflater.inflate(R.layout.subcategory, null);
         }

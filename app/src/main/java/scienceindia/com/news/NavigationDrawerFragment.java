@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+
+import java.util.ArrayList;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -52,6 +53,8 @@ public class NavigationDrawerFragment extends Fragment {
     private DrawerLayout mDrawerLayout;
     private ExpandableListView mExpandableListView;
     private View mFragmentContainerView;
+    private FierceNewsDao mFierceNewsDao;
+    private ExpandableListAdapter expandableListAdapter;
 
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
@@ -76,6 +79,11 @@ public class NavigationDrawerFragment extends Fragment {
 
         // Select either the default item (0) or the last selected item.
         selectItem(mCurrentSelectedPosition);
+
+    }
+
+    public void getCategoryData(ArrayList<CategoryData> mData) {
+        mCategoryDatas = mData;
     }
 
     @Override
@@ -85,18 +93,21 @@ public class NavigationDrawerFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+    ArrayList<CategoryData> mCategoryDatas;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mExpandableListView = (ExpandableListView)inflater.inflate(R.layout.fragment_navigation_drawer,container,false);
+        mExpandableListView = (ExpandableListView) inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+        mFierceNewsDao = new FierceNewsDao();
 
         mExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Log.d("Clicked", "Child Clicked");
-                News.strPresentUrl = DAO._listDataChild.get(DAO._listDataHeader.get(groupPosition)).get(childPosition).getImageUrl();
-                News.SelectedName = DAO._listDataHeader.get(groupPosition).getCategoryName();
-                News.SelectedName += "->"+DAO._listDataChild.get(DAO._listDataHeader.get(groupPosition)).get(childPosition).getSubCategoryName();
+
+                News.strPresentUrl = mCategoryDatas.get(groupPosition).getSubCategoryData().get(childPosition).getImageUrl();
+                News.SelectedName = mCategoryDatas.get(groupPosition).getCategoryName();
+                News.SelectedName += "->" + mCategoryDatas.get(groupPosition).getSubCategoryData().get(childPosition).getSubCategoryName();
                 selectItem(childPosition);
                 return true;
             }
@@ -105,9 +116,8 @@ public class NavigationDrawerFragment extends Fragment {
         mExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                Log.d("Clicked", "Header Clicked");
-                News.strPresentUrl = DAO._listDataHeader.get(groupPosition).getImageUrl();
-                News.SelectedName = DAO._listDataHeader.get(groupPosition).getCategoryName();
+                News.strPresentUrl = mCategoryDatas.get(groupPosition).getImageUrl();
+                News.SelectedName = mCategoryDatas.get(groupPosition).getCategoryName();
                 selectItem(groupPosition);
                 return false;
             }
@@ -129,8 +139,8 @@ public class NavigationDrawerFragment extends Fragment {
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
-
-        ExpandableListAdapter expandableListAdapter = new ExpandableListAdapter(News.mContext, DAO._listDataHeader, DAO._listDataChild);
+//        Log.d("Size is: ", mNews.getCategoryDatas().size()+"");
+        expandableListAdapter = mFierceNewsDao.getExpandableAdapter(mCategoryDatas);
         mExpandableListView.setAdapter(expandableListAdapter);
 
         // set a custom shadow that overlays the main content when the drawer opens
